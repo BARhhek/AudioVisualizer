@@ -1,4 +1,7 @@
 import argparse
+
+import pygame
+
 from src.stream_analyzer import Stream_Analyzer
 import time
 
@@ -48,7 +51,9 @@ def run_FFT_analyzer():
     last_update = time.time()
     print("All ready, starting audio measurements now...")
     fft_samples = 0
-    while True:
+
+    running = True
+    while running:
         if (time.time() - last_update) > (1./fps):
             last_update = time.time()
             raw_fftx, raw_fft, binned_fftx, binned_fft = ear.get_audio_features()
@@ -57,6 +62,12 @@ def run_FFT_analyzer():
             #    print(f"Got fft_features #{fft_samples} of shape {raw_fft.shape}")
         elif args.sleep_between_frames:
             time.sleep(((1./fps)-(time.time()-last_update)) * 0.99)
+
+        #ESC to exit
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
 
 if __name__ == '__main__':
     run_FFT_analyzer()

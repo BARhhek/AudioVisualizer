@@ -139,6 +139,7 @@ class Spectrum_Visualizer:
         #        self.add_slow_bars = not self.add_slow_bars
         #        self.slow_features = [0]*self.ear.n_frequency_bins
 
+
         if np.min(self.ear.bin_mean_values) > 0:
             self.frequency_bin_energies = self.avg_energy_height * self.ear.frequency_bin_energies / self.ear.bin_mean_values
 
