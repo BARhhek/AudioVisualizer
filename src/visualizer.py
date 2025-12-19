@@ -87,8 +87,8 @@ class Spectrum_Visualizer:
             self.prev_screen = self.screen
 
         #pygame.display.set_caption('Spectrum Analyzer -- (FFT-Peak: %05d Hz)' %self.ear.strongest_frequency)
-        self.bin_font = pygame.font.Font('freesansbold.ttf', round(0.025*self.HEIGHT))
-        self.fps_font = pygame.font.Font('freesansbold.ttf', round(0.05*self.HEIGHT))
+        #self.bin_font = pygame.font.Font('freesansbold.ttf', round(0.025*self.HEIGHT))
+        #self.fps_font = pygame.font.Font('freesansbold.ttf', round(0.05*self.HEIGHT))
 
         #for i in range(self.ear.n_frequency_bins):
         #    if i == 0 or i == (self.ear.n_frequency_bins - 1):
@@ -129,6 +129,8 @@ class Spectrum_Visualizer:
         if self._is_running: self.stop()
         else: self.start()
 
+
+    frame = 0
     def update(self):
         #Buttons
         #for event in pygame.event.get():
@@ -153,7 +155,7 @@ class Spectrum_Visualizer:
         self.screen.fill((self.bg_color,self.bg_color,self.bg_color))
 
         if self.plot_audio_history:
-            new_pos = int(self.move_fraction*self.WIDTH - (0.0133*self.WIDTH)), int(self.move_fraction*self.HEIGHT)
+            new_pos = int(self.move_fraction*self.WIDTH), int(self.move_fraction*self.HEIGHT)
             self.screen.blit(pygame.transform.rotate(prev_screen, 180), new_pos)
 
         if self.start_time is None:
@@ -188,7 +190,6 @@ class Spectrum_Visualizer:
 
         pygame.display.flip()
 
-
     def plot_bars(self):
         bars, slow_bars, new_slow_features = [], [], []
         local_height = self.y_ext[1] - self.y_ext[0]
@@ -211,11 +212,14 @@ class Spectrum_Visualizer:
 
         if self.add_fast_bars:
             for i, fast_bar in enumerate(self.fast_bars):
-                pygame.draw.rect(self.screen,self.fast_bar_colors[i],fast_bar,0)
+
+                #plot less bars
+                if i%2 == 0:
+                    pygame.draw.rect(self.screen,self.fast_bar_colors[i],fast_bar,0)
 
         if self.plot_audio_history:
                 self.prev_screen = self.screen.copy().convert_alpha()
-                self.prev_screen = pygame.transform.rotate(self.prev_screen, 180)
+                self.prev_screen = pygame.transform.rotate(self.prev_screen, 5) #mit Winkel rumspielen
                 self.prev_screen.set_alpha(self.prev_screen.get_alpha()*self.alpha_multiplier)
 
         if self.add_slow_bars:
