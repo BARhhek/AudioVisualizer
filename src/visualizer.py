@@ -24,7 +24,7 @@ class Spectrum_Visualizer:
 
         self.toggle_history_mode()
 
-        self.add_slow_bars = 1
+        self.add_slow_bars = 0
         self.add_fast_bars = 1
         self.slow_bar_thickness = max(0.00002*self.HEIGHT, 1.25 / self.ear.n_frequency_bins)
         self.tag_every_n_bins = max(1,round(5 * (self.ear.n_frequency_bins / 51))) # Occasionally display Hz tags on the x-axis
@@ -78,6 +78,7 @@ class Spectrum_Visualizer:
     def start(self):
         print("Starting spectrum visualizer...")
         pygame.init()
+
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         self.screen.fill((self.bg_color,self.bg_color,self.bg_color))
 
@@ -85,29 +86,32 @@ class Spectrum_Visualizer:
             self.screen.set_alpha(255)
             self.prev_screen = self.screen
 
-        pygame.display.set_caption('Spectrum Analyzer -- (FFT-Peak: %05d Hz)' %self.ear.strongest_frequency)
+        #pygame.display.set_caption('Spectrum Analyzer -- (FFT-Peak: %05d Hz)' %self.ear.strongest_frequency)
         self.bin_font = pygame.font.Font('freesansbold.ttf', round(0.025*self.HEIGHT))
         self.fps_font = pygame.font.Font('freesansbold.ttf', round(0.05*self.HEIGHT))
 
-        for i in range(self.ear.n_frequency_bins):
-            if i == 0 or i == (self.ear.n_frequency_bins - 1):
-                continue
-            if i % self.tag_every_n_bins == 0:
-                f_centre = self.ear.frequency_bin_centres[i]
-                text = self.bin_font.render('%d Hz' %f_centre, True, (255, 255, 255) , (self.bg_color, self.bg_color, self.bg_color))
-                textRect = text.get_rect()
-                x = i*(self.WIDTH / self.ear.n_frequency_bins) + (self.bar_width - textRect.x)/2
-                y = 0.98*self.HEIGHT
-                textRect.center = (int(x),int(y))
-                self.bin_text_tags.append(text)
-                self.bin_rectangles.append(textRect)
+        #for i in range(self.ear.n_frequency_bins):
+        #    if i == 0 or i == (self.ear.n_frequency_bins - 1):
+        #        continue
+        #    if i % self.tag_every_n_bins == 0:
+        #        f_centre = self.ear.frequency_bin_centres[i]
+        #        text = self.bin_font.render('%d Hz' %f_centre, True, (255, 255, 255) , (self.bg_color, self.bg_color, self.bg_color))
+        #        textRect = text.get_rect()
+        #        x = i*(self.WIDTH / self.ear.n_frequency_bins) + (self.bar_width - textRect.x)/2
+        #        y = 0.98*self.HEIGHT
+        #        textRect.center = (int(x),int(y))
+        #        self.bin_text_tags.append(text)
+        #        self.bin_rectangles.append(textRect)
 
         self._is_running = True
+        pygame.display.toggle_fullscreen()
 
+
+        #Buttons
         #Interactive components:
-        self.button_height = round(0.05*self.HEIGHT)
-        self.history_button  = Button(text="Toggle 2D/3D Mode", right=self.WIDTH, top=0, width=round(0.12*self.WIDTH), height=self.button_height)
-        self.slow_bar_button = Button(text="Toggle Slow Bars", right=self.WIDTH, top=self.history_button.height, width=round(0.12*self.WIDTH), height=self.button_height)
+        #self.button_height = round(0.05*self.HEIGHT)
+        #self.history_button  = Button(text="Toggle 2D/3D Mode", right=self.WIDTH, top=0, width=round(0.12*self.WIDTH), height=self.button_height)
+        #self.slow_bar_button = Button(text="Toggle Slow Bars", right=self.WIDTH, top=self.history_button.height, width=round(0.12*self.WIDTH), height=self.button_height)
 
     def stop(self):
         print("Stopping spectrum visualizer...")
@@ -126,13 +130,14 @@ class Spectrum_Visualizer:
         else: self.start()
 
     def update(self):
-        for event in pygame.event.get():
-            if self.history_button.click():
-                self.plot_audio_history = not self.plot_audio_history
-                self.toggle_history_mode()
-            if self.slow_bar_button.click():
-                self.add_slow_bars = not self.add_slow_bars
-                self.slow_features = [0]*self.ear.n_frequency_bins
+        #Buttons
+        #for event in pygame.event.get():
+        #    if self.history_button.click():
+        #        self.plot_audio_history = not self.plot_audio_history
+        #        self.toggle_history_mode()
+        #    if self.slow_bar_button.click():
+        #        self.add_slow_bars = not self.add_slow_bars
+        #        self.slow_features = [0]*self.ear.n_frequency_bins
 
         if np.min(self.ear.bin_mean_values) > 0:
             self.frequency_bin_energies = self.avg_energy_height * self.ear.frequency_bin_energies / self.ear.bin_mean_values
@@ -159,26 +164,26 @@ class Spectrum_Visualizer:
             self.fps = self.fps_interval / (time.time()-self.start_time)
             self.start_time = time.time()
 
-        self.text = self.fps_font.render('Fps: %.1f' %(self.fps), True, (255, 255, 255) , (self.bg_color, self.bg_color, self.bg_color))
-        self.textRect = self.text.get_rect()
-        self.textRect.x, self.textRect.y = round(0.015*self.WIDTH), round(0.03*self.HEIGHT)
-        pygame.display.set_caption('Spectrum Analyzer -- (FFT-Peak: %05d Hz)' %self.ear.strongest_frequency)
+        #self.text = self.fps_font.render('Fps: %.1f' %(self.fps), True, (255, 255, 255) , (self.bg_color, self.bg_color, self.bg_color))
+        #self.textRect = self.text.get_rect()
+        #self.textRect.x, self.textRect.y = round(0.015*self.WIDTH), round(0.03*self.HEIGHT)
+        #pygame.display.set_caption('Spectrum Analyzer -- (FFT-Peak: %05d Hz)' %self.ear.strongest_frequency)
 
         self.plot_bars()
 
         #Draw text tags:
-        self.screen.blit(self.text, self.textRect)
-        if len(self.bin_text_tags) > 0:
-            cnt = 0
-            for i in range(self.ear.n_frequency_bins):
-                if i == 0 or i == (self.ear.n_frequency_bins - 1):
-                    continue
-                if i % self.tag_every_n_bins == 0:
-                    self.screen.blit(self.bin_text_tags[cnt], self.bin_rectangles[cnt])
-                    cnt += 1
-
-        self.history_button.draw(self.screen)
-        self.slow_bar_button.draw(self.screen)
+        #self.screen.blit(self.text, self.textRect)
+        #if len(self.bin_text_tags) > 0:
+        #    cnt = 0
+        #    for i in range(self.ear.n_frequency_bins):
+        #        if i == 0 or i == (self.ear.n_frequency_bins - 1):
+        #            continue
+        #        if i % self.tag_every_n_bins == 0:
+        #            self.screen.blit(self.bin_text_tags[cnt], self.bin_rectangles[cnt])
+        #            cnt += 1
+        #Buttons
+        #self.history_button.draw(self.screen)
+        #self.slow_bar_button.draw(self.screen)
 
         pygame.display.flip()
 
@@ -220,4 +225,5 @@ class Spectrum_Visualizer:
 
         #Draw everything:
         self.screen.blit(pygame.transform.rotate(self.screen, 180), (0, 0))
+
 
